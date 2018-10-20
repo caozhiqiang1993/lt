@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0 ,viewport-fit=cover" />
+    <link rel="stylesheet" href="https://at.alicdn.com/t/font_746239_sfcfjc4mgbf.css">
+    <link rel="stylesheet" href="INDEX_PUBLIC_CSS/main.css">
+    <link rel="stylesheet" href="INDEX_PUBLIC_CSS/message.css">
+    <title>我的IM</title>
+  </head>
+  <body>
+    <div class="hello">
+    <div id="header">
+      <p>
+        <span>
+          {{title}}
+        </span>
+      </p>
+    </div>
+    <div style="height: 2.2rem;"></div>
+    <div id="content">
+      <!-- 聊天记录 -->
+      <div id="chat_log" v-show="contentIndex == 0">
+        <ul>
+            <li v-for="item in msgInfo" @click="handleRouter(item.name)">
+              <div class="img_box">
+                <span><img :src="item.img"></span>
+              </div>
+              <div class="info_box">
+                <span v-text="item.name"></span>
+                <p v-text="item.msg">嗨，欢迎体验LayIM。演示标记：1530843285035</p>
+              </div>
+            </li>
+        </ul>
+      </div>
+
+      <!-- 好友列表 -->
+      <div id="friends" v-show="contentIndex == 1">
+        <ul class="friends_h">
+          <li v-for="item in friendsHeader">
+            <div class="fh_img">
+              <i :class="item.iconName"></i>
+            </div>
+            <div class="fh_text">
+              <span v-text="item.text"></span>
+            </div>
+          </li>
+        </ul>
+
+        <ul class="friends_f">
+          <li v-for="item,index in friendsList">
+            <h5 @click="item.show = !item.show">
+              <i class="iconfont icon-htbarrowright02" :class="{rotate90 : item.show}"></i>
+              <span v-text="item.cateName"></span>
+              <em>
+                (<span v-text="item.num"></span>)
+              </em>
+            </h5>
+            <ul class="friends_info" v-show="item.show">
+              <li v-for="list,key in item.list" @click="handleRouter(list.name)">
+                <div class="friends_img_box">
+                  <span><img :src="list.img"></span>
+                </div>
+                <div class="friends_info_box">
+                  <span v-text="list.name"></span>
+                  <p v-text="list.autograph"></p>
+                </div>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 更多 -->
+      <div id="more" v-show="contentIndex == 2">
+        <ul>
+          <li v-for="item in more">
+            <div class="more_img">
+              <i :class="item.icon"></i>
+            </div>
+            <div class="more_text">
+              <span v-text="item.name">关于</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div style="height: 2.2rem;"></div>
+    </div>
+
+
+
+
+    <div id="footer">
+      <ul>
+        <li v-for="(item,index) in footerInfo" @click="contentIndex = index" :class="{active : contentIndex == index}">
+          <p><i :class="[item.iconName,{reversal : index == 0}]" class="icon"></i></p>
+          <span v-text="item.text"></span>
+        </li>
+      </ul>
+    </div>
+    <div>
+    </div>
+
+
+
+      <div id="message" v-bind:style="{ left: left + '%' }">
+        <div id="msg_header" ref="header">
+          <div class="header_img">
+            <i class="iconfont icon-left" @click="handleRouter()"></i>
+          </div>
+          <div class="header_text">
+            <span v-text="msgTitle"></span>
+          </div>
+        </div>
+        <div id="msg_content">
+          <div class="msg_info" ref="msg_info">
+            <ul>
+              <li v-for="(item,index) in userMsg" class=""v-bind:class="{ 'msg_info_li_right': user_id != item.user_id}">
+                <div class="msg_user_info" class=""v-bind:class="{ 'msg_user_info_right': user_id != item.user_id}">
+                  <img :src="item.img">
+                  <span v-text="item.name" class=""v-bind:class="{ 'msg_user_info_text_right': user_id != item.user_id}"></span>
+                </div>
+                <div class="msg_msg" v-html="item.msg" class=""v-bind:class="{ 'msg_msg_right': user_id != item.user_id}">
+                </div>
+              </li>
+              <li class="interval_time">
+                <span>07-07 14:28</span>
+              </li>
+
+            </ul>
+          </div>
+          <div class="input_box">
+            <div class="input_text">
+              <input type="text">
+              <button>发送</button>
+            </div>
+            <div class="more_function">
+              <span class="iconfont icon-smile"></span>
+              <span class="iconfont icon-tupian"></span>
+              <span class="iconfont icon-iconset0196"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+  </div>
+  </body>
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+<script src="INDEX_PUBLIC_JS/socket.js"></script>
+<script src="INDEX_PUBLIC_JS/storage.js"></script>
+<script src="INDEX_PUBLIC_JS/data.js"></script>
+  <script>
+var addActivity = new Vue({
+  el: '.hello',
+  data : dataInfo,
+  methods:{
+    handleRouter(name){
+        if(name == undefined){
+            this.left = 100
+        }else{
+            this.left = 0
+            this.msgTitle = name
+        }
+    },
+    threadPoxi(){  // 实际调用的方法
+        //参数
+        const agentData = "mymessage";
+        //若是ws开启状态
+        if (this.socket.ws.readyState !== this.socket.ws.OPEN) {
+            // this.websocketsend(agentData)
+            console.log("已开启")
+        }
+        // 若是 正在开启状态，则等待300毫秒
+        else if (this.socket.ws.readyState === this.socket.ws.CONNECTING) {
+            let that = this.socket.ws;//保存当前对象this
+            setTimeout(function () {
+                // that.websocketsend(agentData)
+                console.log("发送")
+            }, 300);
+        }
+        // 若未开启 ，则等待500毫秒
+        else {
+            this.socket.connectSocket;
+            let that = this.socket.ws;//保存当前对象this
+            setTimeout(function () {
+                // that.websocketsend(agentData)
+                console.log("发送2")
+            }, 500);
+        }
+    }
+  },
+    mounted() {
+    this.socket = socket
+    this.storage = storage
+//    this.socket.connectSocket(this.storage.get('key'))
+  },
+
+})
+</script>
+
+</html>
